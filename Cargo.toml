@@ -1,0 +1,14 @@
+[package]
+name = "Ransomware"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aes-gcm = "0.10"  # Ensure you are using version 0.10 or later
+rand = "0.8"      # For random IV generation
+sha2 = "0.10"     # For hashing
+hkdf = "0.12"     # For key derivation
+
+[dependencies.winapi]
+version = "0.3"
+features = ["winuser"]
